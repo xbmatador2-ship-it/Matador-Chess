@@ -4010,6 +4010,9 @@ def explain_consequences(
 ):
     """
     Cherche les conséquences concrètes du coup.
+
+    Une pièce attaquée mais correctement défendue
+    n'est pas considérée comme une menace matérielle.
     """
 
     consequences = []
@@ -4037,7 +4040,6 @@ def explain_consequences(
             user_king,
         )
     ):
-
         consequences.append(
             "ton roi est directement sous pression"
         )
@@ -4047,54 +4049,54 @@ def explain_consequences(
     # --------------------------------------------------------
 
     attacked = attacked_pieces(
-    board_after,
-    user_color,
-)
-
-important = [
-    item
-    for item in attacked
-    if item["value"] >= 3
-]
-
-for item in important[:3]:
-
-    square = item["square"]
-
-    defenders = board_after.attackers(
+        board_after,
         user_color,
-        square,
     )
 
-    real_defenders = [
-        defender_square
-        for defender_square in defenders
-        if defender_square != square
+    important = [
+        item
+        for item in attacked
+        if item["value"] >= 3
     ]
 
-    # Une pièce attaquée ET défendue n'est pas
-    # automatiquement une conséquence négative.
+    for item in important[:3]:
 
-    if not real_defenders:
+        square = item["square"]
 
-        consequences.append(
-            f"ton {piece_name(item['piece'])} "
-            f"en {square_name(square)} "
-            "est attaqué et réellement non défendu"
-        )
-
-    elif len(
-        board_after.attackers(
-            not user_color,
+        defenders = board_after.attackers(
+            user_color,
             square,
         )
-    ) > len(real_defenders):
 
-        consequences.append(
-            f"ton {piece_name(item['piece'])} "
-            f"en {square_name(square)} "
-            "est sous une pression supérieure à sa défense"
-        )
+        # Une pièce attaquée et défendue
+        # n'est pas automatiquement vulnérable.
+
+        if not defenders:
+
+            consequences.append(
+                f"ton {piece_name(item['piece'])} "
+                f"en {square_name(square)} "
+                "est attaqué et non défendu"
+            )
+
+        else:
+
+            enemy_attackers = board_after.attackers(
+                opponent_color,
+                square,
+            )
+
+            # La pièce est sous pression seulement
+            # si elle possède moins de défenseurs
+            # que l'adversaire n'a d'attaquants.
+
+            if len(enemy_attackers) > len(defenders):
+
+                consequences.append(
+                    f"ton {piece_name(item['piece'])} "
+                    f"en {square_name(square)} "
+                    "est sous une pression supérieure à sa défense"
+                )
 
     # --------------------------------------------------------
     # PIÈCES NON DÉFENDUES
@@ -4111,15 +4113,32 @@ for item in important[:3]:
         if item["value"] >= 3
     ]
 
-    if valuable_undefended:
+    for item in valuable_undefended[:2]:
 
-        item = valuable_undefended[0]
+        square = item["square"]
 
-        consequences.append(
-            f"ton {piece_name(item['piece'])} "
-            f"en {square_name(item['square'])} "
-            "n'a plus de défenseur direct"
-        )
+        # On ne signale ici que les pièces
+        # qui sont réellement attaquées.
+
+        if board_after.is_attacked_by(
+            opponent_color,
+            square,
+        ):
+
+            # Évite un doublon avec le bloc précédent.
+
+            already_reported = any(
+                square_name(square) in consequence
+                for consequence in consequences
+            )
+
+            if not already_reported:
+
+                consequences.append(
+                    f"ton {piece_name(item['piece'])} "
+                    f"en {square_name(square)} "
+                    "est réellement vulnérable"
+                )
 
     # --------------------------------------------------------
     # MENACES CONTRE L'ADVERSAIRE
@@ -4148,14 +4167,11 @@ for item in important[:3]:
     if not consequences:
 
         consequences.append(
-            "la principale conséquence est positionnelle : "
-            "l'adversaire conserve davantage de possibilités "
-            "et peut améliorer sa position."
+            "aucune conséquence matérielle directe : "
+            "les pièces attaquées restent correctement protégées"
         )
 
     return consequences[:4]
-
-
 # ============================================================
 # INTENTION POSSIBLE DU JOUEUR
 # ============================================================
