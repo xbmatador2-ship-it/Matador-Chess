@@ -2615,18 +2615,32 @@ def immediate_threats(
 # DÉTECTION DE MENACE AVANT LE COUP
 # ============================================================
 
+# ============================================================
+# DÉTECTION DE MENACE AVANT LE COUP
+# ============================================================
+
 def identify_opponent_threat(
     board_before,
     is_user_white,
 ):
     """
-    Identifie ce que l'adversaire menace avant le coup
-    du joueur.
+    Identifie uniquement les menaces réellement pertinentes
+    avant le coup du joueur.
 
-    On ne cherche pas à commenter la qualité du coup adverse.
-    On cherche seulement à répondre :
+    IMPORTANT :
+    Une pièce attaquée n'est PAS automatiquement une pièce
+    en danger.
 
-        "Qu'est-ce que je devais regarder avant de jouer ?"
+    Le coach distingue :
+        - pièce attaquée mais correctement défendue ;
+        - pièce sous pression supérieure à sa défense ;
+        - pièce réellement non défendue ;
+        - roi sous attaque.
+
+    Objectif :
+        éviter les faux diagnostics du type
+        "fou attaqué en f5" lorsque le fou est parfaitement
+        protégé.
     """
 
     user_color = (
@@ -2637,49 +2651,133 @@ def identify_opponent_threat(
 
     opponent_color = not user_color
 
-    threats = immediate_threats(
+    threats = []
+
+    # ========================================================
+    # MENACES CONCRÈTES DE L'ADVERSAIRE
+    # ========================================================
+
+    immediate = immediate_threats(
         board_before,
         opponent_color,
     )
 
-    # --------------------------------------------------------
-    # MENACE SUR NOS PIÈCES
-    # --------------------------------------------------------
+    for threat in immediate:
 
-    attacked = attacked_pieces(
-        board_before,
-        user_color,
-    )
+        if threat not in threats:
 
-    valuable_attacked = [
-        item
-        for item in attacked
-        if item["value"] >= 3
-    ]
+            threats.append(
+                threat
+            )
 
-    for item in valuable_attacked:
+    # ========================================================
+    # PIÈCES ATTAQUÉES
+    # ========================================================
 
-        square = square_name(
-            item["square"]
+    for square, piece in board_before.piece_map().items():
+
+        # On ne regarde que les pièces du joueur.
+        if piece.color != user_color:
+            continue
+
+        # Le roi est traité séparément.
+        if piece.piece_type == chess.KING:
+            continue
+
+        # La pièce doit réellement être attaquée.
+        if not board_before.is_attacked_by(
+            opponent_color,
+            square,
+        ):
+            continue
+
+        piece_value = PIECE_VALUES.get(
+            piece.piece_type,
+            0,
+        )
+
+        # On ignore les pions pour éviter le bruit.
+        if piece_value < 3:
+            continue
+
+        # ====================================================
+        # ATTAQUANTS
+        # ====================================================
+
+        attackers = board_before.attackers(
+            opponent_color,
+            square,
+        )
+
+        # ====================================================
+        # DÉFENSEURS
+        # ====================================================
+
+        defenders = board_before.attackers(
+            user_color,
+            square,
+        )
+
+        attacker_count = len(
+            attackers
+        )
+
+        defender_count = len(
+            defenders
         )
 
         name = piece_name(
-            item["piece"]
+            piece
         )
 
-        defenders = board_before.attackers(
-    user_color,
-    item["square"],
-)
+        square_text = square_name(
+            square
+        )
 
-if not defenders:
-    threats.append(
-        f"{name} réellement vulnérable en {square}"
-    )
+        # ====================================================
+        # PIÈCE SANS DÉFENSE
+        # ====================================================
 
-    # --------------------------------------------------------
+        if defender_count == 0:
+
+            threats.append(
+                f"{name} réellement vulnérable "
+                f"en {square_text} : aucune défense directe"
+            )
+
+        # ====================================================
+        # PLUS D'ATTAQUANTS QUE DE DÉFENSEURS
+        # ====================================================
+
+        elif attacker_count > defender_count:
+
+            threats.append(
+                f"{name} en {square_text} est sous "
+                "une pression supérieure à sa défense"
+            )
+
+        # ====================================================
+        # PIÈCE ATTAQUÉE ET CORRECTEMENT DÉFENDUE
+        # ====================================================
+
+        else:
+
+            # NE PAS SIGNALER LA PIÈCE.
+            #
+            # Une pièce attaquée mais suffisamment défendue
+            # n'est pas automatiquement une menace.
+            #
+            # Exemple :
+            # Fou f5 attaqué par une pièce adverse
+            # mais défendu par une tour ou un pion.
+            #
+            # Aucun message n'est ajouté.
+
+            pass
+
+    # ========================================================
     # ROI
-    # --------------------------------------------------------
+    # ========================================================
 
     king_square = board_before.king(
         user_color
@@ -2697,7 +2795,10 @@ if not defenders:
             "ton roi est sous pression"
         )
 
-    # Suppression des doublons
+    # ========================================================
+    # SUPPRESSION DES DOUBLONS
+    # ========================================================
+
     unique = []
 
     for threat in threats:
@@ -2709,7 +2810,6 @@ if not defenders:
             )
 
     return unique[:5]
-
 
 # ============================================================
 # TACTIQUES — FOURCHETTE
