@@ -2667,9 +2667,15 @@ def identify_opponent_threat(
             item["piece"]
         )
 
-        threats.append(
-            f"{name} attaqué(e) en {square}"
-        )
+        defenders = board_before.attackers(
+    user_color,
+    item["square"],
+)
+
+if not defenders:
+    threats.append(
+        f"{name} réellement vulnérable en {square}"
+    )
 
     # --------------------------------------------------------
     # ROI
