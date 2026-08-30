@@ -2364,12 +2364,19 @@ def attacked_pieces(
     return result
 
 
-def defended_pieces(
+def undefended_pieces(
     board,
     color,
 ):
     """
-    Retourne les pièces ayant au moins un défenseur.
+    Détecte les pièces réellement sans protection.
+
+    Une pièce n'est considérée comme non défendue que si
+    aucune autre pièce du même camp ne contrôle sa case.
+
+    Une pièce simplement attaquée par l'adversaire n'est donc
+    PAS considérée comme non défendue si elle possède un
+    défenseur.
     """
 
     result = []
@@ -2382,23 +2389,30 @@ def defended_pieces(
         if piece.piece_type == chess.KING:
             continue
 
-        attackers = board.attackers(
+        defenders = board.attackers(
             color,
             square,
         )
 
-        if attackers:
+        # On retire la pièce elle-même si nécessaire.
+        real_defenders = [
+            defender_square
+            for defender_square in defenders
+            if defender_square != square
+        ]
+
+        if not real_defenders:
 
             result.append({
                 "square": square,
                 "piece": piece,
-                "defenders": len(
-                    attackers
+                "value": PIECE_VALUES.get(
+                    piece.piece_type,
+                    0,
                 ),
             })
 
     return result
-
 
 # ============================================================
 # PIÈCES NON DÉFENDUES
@@ -4033,22 +4047,53 @@ def explain_consequences(
     # --------------------------------------------------------
 
     attacked = attacked_pieces(
-        board_after,
+    board_after,
+    user_color,
+)
+
+important = [
+    item
+    for item in attacked
+    if item["value"] >= 3
+]
+
+for item in important[:3]:
+
+    square = item["square"]
+
+    defenders = board_after.attackers(
         user_color,
+        square,
     )
 
-    important = [
-        item
-        for item in attacked
-        if item["value"] >= 3
+    real_defenders = [
+        defender_square
+        for defender_square in defenders
+        if defender_square != square
     ]
 
-    for item in important[:3]:
+    # Une pièce attaquée ET défendue n'est pas
+    # automatiquement une conséquence négative.
+
+    if not real_defenders:
 
         consequences.append(
             f"ton {piece_name(item['piece'])} "
-            f"en {square_name(item['square'])} "
-            "est attaqué"
+            f"en {square_name(square)} "
+            "est attaqué et réellement non défendu"
+        )
+
+    elif len(
+        board_after.attackers(
+            not user_color,
+            square,
+        )
+    ) > len(real_defenders):
+
+        consequences.append(
+            f"ton {piece_name(item['piece'])} "
+            f"en {square_name(square)} "
+            "est sous une pression supérieure à sa défense"
         )
 
     # --------------------------------------------------------
