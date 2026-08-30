@@ -2369,14 +2369,14 @@ def undefended_pieces(
     color,
 ):
     """
-    Détecte les pièces réellement sans protection.
+    Retourne uniquement les pièces qui n'ont réellement
+    aucun défenseur ami.
 
-    Une pièce n'est considérée comme non défendue que si
-    aucune autre pièce du même camp ne contrôle sa case.
+    IMPORTANT :
+    Un pion, cavalier, fou, tour ou dame qui protège la case
+    compte comme défenseur.
 
-    Une pièce simplement attaquée par l'adversaire n'est donc
-    PAS considérée comme non défendue si elle possède un
-    défenseur.
+    Une pièce attaquée mais protégée n'est donc PAS retournée.
     """
 
     result = []
@@ -2389,31 +2389,60 @@ def undefended_pieces(
         if piece.piece_type == chess.KING:
             continue
 
+        # ----------------------------------------------------
+        # DÉFENSEURS AMIS
+        # ----------------------------------------------------
+
         defenders = board.attackers(
             color,
             square,
         )
 
-        # On retire la pièce elle-même si nécessaire.
-        real_defenders = [
-            defender_square
-            for defender_square in defenders
-            if defender_square != square
-        ]
+        # Le résultat de board.attackers() contient normalement
+        # les pièces qui contrôlent cette case.
+        #
+        # On vérifie explicitement que ce sont bien des pièces
+        # différentes de la pièce elle-même.
 
-        if not real_defenders:
+        real_defenders = []
 
-            result.append({
-                "square": square,
-                "piece": piece,
-                "value": PIECE_VALUES.get(
-                    piece.piece_type,
-                    0,
-                ),
-            })
+        for defender_square in defenders:
+
+            defender_piece = board.piece_at(
+                defender_square
+            )
+
+            if defender_piece is None:
+                continue
+
+            if defender_square == square:
+                continue
+
+            if defender_piece.color != color:
+                continue
+
+            real_defenders.append(
+                defender_square
+            )
+
+        # ----------------------------------------------------
+        # AUCUN DÉFENSEUR
+        # ----------------------------------------------------
+
+        if len(real_defenders) == 0:
+
+            result.append(
+                {
+                    "square": square,
+                    "piece": piece,
+                    "value": PIECE_VALUES.get(
+                        piece.piece_type,
+                        0,
+                    ),
+                }
+            )
 
     return result
-
 # ============================================================
 # PIÈCES NON DÉFENDUES
 # ============================================================
@@ -2623,11 +2652,6 @@ def immediate_threats(
         )
 
     return threats
-
-
-# ============================================================
-# DÉTECTION DE MENACE AVANT LE COUP
-# ============================================================
 
 # ============================================================
 # DÉTECTION DE MENACE AVANT LE COUP
