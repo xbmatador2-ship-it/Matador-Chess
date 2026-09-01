@@ -1,1 +1,14 @@
-{}
+{
+  "version": "0.6",
+  "concepts": 31,
+  "tactics": 14,
+  "files": [
+    "concepts.json",
+    "tactics.json",
+    "coach_pipeline.json",
+    "safety_rules.json",
+    "strategy_graph.json",
+    "README.md",
+    "opening_knowledge.json"
+  ]
+}

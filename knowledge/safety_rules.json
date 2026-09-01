@@ -1,0 +1,15 @@
+{
+  "piece_status": [
+    "ATTACKED = au moins une attaque ennemie",
+    "DEFENDED = au moins un défenseur effectif",
+    "HANGING = capture concrètement favorable/forcée",
+    "UNDEFENDED sans attaque = pas de menace tactique immédiate"
+  ],
+  "explanation": [
+    "Ne jamais inventer l'intention psychologique.",
+    "Ne pas reprocher une menace que le coup joué résout.",
+    "Ne montrer la meilleure réponse adverse que si elle exploite ou transforme concrètement la position.",
+    "Une tactique concrète passe avant un commentaire générique.",
+    "Un principe n'est jamais une loi absolue."
+  ]
+}
