@@ -1,5 +1,0 @@
-streamlit
-python-chess
-pandas
-plotly
-requests
