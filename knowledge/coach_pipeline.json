@@ -1,0 +1,35 @@
+{
+  "version": "0.3",
+  "principle": "Expliquer les décisions, pas réciter les variantes.",
+  "steps": [
+    "POSITION AVANT",
+    "DERNIER COUP ADVERSE / MENACE",
+    "COUP JOUÉ",
+    "ATTAQUE / DÉFENSE / ABANDON",
+    "MENACE RÉSOLUE ?",
+    "TACTIQUE",
+    "MEILLEURE RÉPONSE ADVERSE",
+    "CONSÉQUENCE CONCRÈTE",
+    "MEILLEUR COUP",
+    "POURQUOI IL EST MEILLEUR",
+    "LEÇON RÉUTILISABLE"
+  ],
+  "tactical_priority": [
+    "mate_threat",
+    "forced_material_gain",
+    "skewer",
+    "royal_fork",
+    "double_attack",
+    "capture_defender",
+    "hanging_piece",
+    "pin",
+    "discovered_attack",
+    "deflection",
+    "overloaded_defender",
+    "intermezzo",
+    "back_rank",
+    "quiet_tactical_move"
+  ],
+  "good_move_rule": "Un bon coup reçoit une explication pédagogique; jamais seulement « pas d'erreur ». ",
+  "bad_move_rule": "Une erreur reçoit d'abord le mécanisme concret, puis la variante moteur."
+}

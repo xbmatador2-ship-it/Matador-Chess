@@ -1,0 +1,72 @@
+[
+  {
+    "priority": 1,
+    "id": "mate_threat",
+    "label": "Tactique de mat"
+  },
+  {
+    "priority": 2,
+    "id": "forced_material_gain",
+    "label": "Gain matériel forcé"
+  },
+  {
+    "priority": 3,
+    "id": "skewer",
+    "label": "Enfilade"
+  },
+  {
+    "priority": 4,
+    "id": "royal_fork",
+    "label": "Fourchette royale"
+  },
+  {
+    "priority": 5,
+    "id": "double_attack",
+    "label": "Double attaque"
+  },
+  {
+    "priority": 6,
+    "id": "capture_defender",
+    "label": "Élimination du défenseur"
+  },
+  {
+    "priority": 7,
+    "id": "hanging_piece",
+    "label": "Pièce laissée en prise"
+  },
+  {
+    "priority": 8,
+    "id": "pin",
+    "label": "Clouage"
+  },
+  {
+    "priority": 9,
+    "id": "discovered_attack",
+    "label": "Attaque découverte"
+  },
+  {
+    "priority": 10,
+    "id": "deflection",
+    "label": "Déviation"
+  },
+  {
+    "priority": 11,
+    "id": "overloaded_defender",
+    "label": "Défenseur surchargé"
+  },
+  {
+    "priority": 12,
+    "id": "intermezzo",
+    "label": "Intermezzo"
+  },
+  {
+    "priority": 13,
+    "id": "back_rank",
+    "label": "Dernière rangée"
+  },
+  {
+    "priority": 14,
+    "id": "quiet_tactical_move",
+    "label": "Coup tactique calme"
+  }
+]
